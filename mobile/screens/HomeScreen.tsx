@@ -4,8 +4,10 @@ import type { CompositeScreenProps } from "@react-navigation/native";
 import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ScreenTop } from "../src/components/Chrome";
+import { AdminActions, AdminAddButton, confirmDelete } from "../src/components/AdminControls";
 import { useAuth } from "../src/auth";
-import { featuredIncidents } from "../src/data/incidents";
+import { useContent } from "../src/content";
+import { deleteIncident } from "../src/api";
 import { callNumber, colors, firstName } from "../src/theme";
 import type { AppStackParamList, TabParamList } from "../src/types";
 
@@ -15,7 +17,11 @@ type Props = CompositeScreenProps<
 >;
 
 export default function HomeScreen({ navigation }: Props) {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+  const { incidents, emergencies, refresh } = useContent();
+  const featured = incidents.filter((item) => item.featured).slice(0, 4);
+  const police = emergencies.find((item) => item.name.toLowerCase().includes("police")) ?? emergencies[0];
+  const policeNumber = police?.number ?? "991";
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
@@ -27,10 +33,10 @@ export default function HomeScreen({ navigation }: Props) {
           Choose what you need right now. Nothing you tap is shared with anyone.
         </Text>
 
-        <Pressable style={styles.danger} onPress={() => Linking.openURL(callNumber("991"))}>
+        <Pressable style={styles.danger} onPress={() => Linking.openURL(callNumber(policeNumber))}>
           <View style={{ flex: 1 }}>
             <Text style={styles.dangerKicker}>IMMEDIATE DANGER?</Text>
-            <Text style={styles.dangerTitle}>Call Police 991</Text>
+            <Text style={styles.dangerTitle}>Call {police?.name ?? "Police"} {policeNumber}</Text>
           </View>
           <View style={styles.bang}>
             <Text style={styles.bangText}>!</Text>
@@ -40,15 +46,27 @@ export default function HomeScreen({ navigation }: Props) {
         <View style={styles.happened}>
           <Text style={styles.happenedTitle}>Something happened</Text>
           <Text style={styles.happenedSub}>I need immediate guidance on what to do next.</Text>
+          <AdminAddButton label="+ Add incident" onPress={() => navigation.navigate("EditIncident", {})} />
           <View style={styles.grid}>
-            {featuredIncidents.map((item) => (
-              <Pressable
-                key={item.id}
-                style={styles.gridItem}
-                onPress={() => navigation.navigate("IncidentDetail", { incidentId: item.id })}
-              >
-                <Text style={styles.gridText}>{item.title}</Text>
-              </Pressable>
+            {featured.map((item) => (
+              <View key={item.id} style={styles.gridWrap}>
+                <Pressable
+                  style={styles.gridItem}
+                  onPress={() => navigation.navigate("IncidentDetail", { incidentId: item.id })}
+                >
+                  <Text style={styles.gridText}>{item.title}</Text>
+                </Pressable>
+                <AdminActions
+                  onEdit={() => navigation.navigate("EditIncident", { incidentId: item.id })}
+                  onDelete={() =>
+                    confirmDelete(`Delete ${item.title}?`, async () => {
+                      if (!token) return;
+                      await deleteIncident(token, item.id);
+                      await refresh();
+                    })
+                  }
+                />
+              </View>
             ))}
           </View>
           <Pressable onPress={() => navigation.navigate("IncidentList")}>
@@ -159,9 +177,11 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 10,
   },
-  gridItem: {
+  gridWrap: {
     width: "48%",
     flexGrow: 1,
+  },
+  gridItem: {
     backgroundColor: "rgba(92, 32, 18, 0.28)",
     borderRadius: 18,
     paddingVertical: 18,

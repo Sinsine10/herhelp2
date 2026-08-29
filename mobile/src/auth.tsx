@@ -8,8 +8,10 @@ type AuthContextValue = {
   user: AuthUser | null;
   token: string | null;
   ready: boolean;
+  isAdmin: boolean;
   setSession: (token: string, user: AuthUser) => Promise<void>;
   signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -44,6 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       token,
       ready,
+      isAdmin: user?.role === "admin",
       setSession: async (nextToken: string, nextUser: AuthUser) => {
         await setStoredItem(TOKEN_KEY, nextToken);
         setToken(nextToken);
@@ -53,6 +56,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await deleteStoredItem(TOKEN_KEY);
         setToken(null);
         setUser(null);
+      },
+      refreshUser: async () => {
+        const saved = token ?? (await getStoredItem(TOKEN_KEY));
+        if (!saved) {
+          return;
+        }
+        const profile = await getProfile(saved);
+        setUser(profile.user);
       },
     }),
     [user, token, ready]

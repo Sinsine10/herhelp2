@@ -6,7 +6,10 @@ import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ScreenTop } from "../src/components/Chrome";
 import { FilterChips } from "../src/components/FilterChips";
-import { helpServices, serviceCategories, type ServiceCategory } from "../src/data/services";
+import { AdminActions, AdminAddButton, confirmDelete } from "../src/components/AdminControls";
+import { useAuth } from "../src/auth";
+import { useContent } from "../src/content";
+import { deleteService } from "../src/api";
 import { callNumber, colors } from "../src/theme";
 import type { AppStackParamList, TabParamList } from "../src/types";
 
@@ -16,12 +19,18 @@ type Props = CompositeScreenProps<
 >;
 
 export default function FindHelpScreen({ navigation }: Props) {
+  const { token } = useAuth();
+  const { services, refresh } = useContent();
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<ServiceCategory>("All");
+  const [category, setCategory] = useState("All");
+  const categories = useMemo(
+    () => ["All", ...Array.from(new Set(services.map((item) => item.category)))],
+    [services]
+  );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return helpServices.filter((item) => {
+    return services.filter((item) => {
       const matchesCategory = category === "All" || item.category === category;
       const matchesQuery =
         !q ||
@@ -31,7 +40,7 @@ export default function FindHelpScreen({ navigation }: Props) {
         item.description.toLowerCase().includes(q);
       return matchesCategory && matchesQuery;
     });
-  }, [query, category]);
+  }, [query, category, services]);
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
@@ -41,6 +50,7 @@ export default function FindHelpScreen({ navigation }: Props) {
         <Text style={styles.sub}>
           Verified hospitals, shelters, counselling, legal aid and protection services.
         </Text>
+        <AdminAddButton label="+ Add service" onPress={() => navigation.navigate("EditService", {})} />
         <TextInput
           style={styles.search}
           placeholder="Search by name, service or area"
@@ -48,7 +58,7 @@ export default function FindHelpScreen({ navigation }: Props) {
           value={query}
           onChangeText={setQuery}
         />
-        <FilterChips items={serviceCategories} selected={category} onSelect={setCategory} />
+        <FilterChips items={categories} selected={category} onSelect={setCategory} />
         {filtered.map((item) => (
           <View key={item.id} style={styles.card}>
             <View style={styles.head}>
@@ -70,6 +80,16 @@ export default function FindHelpScreen({ navigation }: Props) {
             <Pressable style={styles.call} onPress={() => Linking.openURL(callNumber(item.phone))}>
               <Text style={styles.callText}>Call {item.phone}</Text>
             </Pressable>
+            <AdminActions
+              onEdit={() => navigation.navigate("EditService", { serviceId: item.id })}
+              onDelete={() =>
+                confirmDelete(`Delete ${item.name}?`, async () => {
+                  if (!token) return;
+                  await deleteService(token, item.id);
+                  await refresh();
+                })
+              }
+            />
           </View>
         ))}
       </ScrollView>

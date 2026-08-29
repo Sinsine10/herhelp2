@@ -6,7 +6,10 @@ import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ScreenTop } from "../src/components/Chrome";
 import { FilterChips } from "../src/components/FilterChips";
-import { guideCategories, guides, type GuideCategory } from "../src/data/guides";
+import { AdminActions, AdminAddButton, confirmDelete } from "../src/components/AdminControls";
+import { useAuth } from "../src/auth";
+import { useContent } from "../src/content";
+import { deleteGuide } from "../src/api";
 import { colors } from "../src/theme";
 import type { AppStackParamList, TabParamList } from "../src/types";
 
@@ -16,10 +19,16 @@ type Props = CompositeScreenProps<
 >;
 
 export default function LearnScreen({ navigation }: Props) {
-  const [category, setCategory] = useState<GuideCategory>("All");
+  const { token } = useAuth();
+  const { guides, refresh } = useContent();
+  const [category, setCategory] = useState("All");
+  const categories = useMemo(
+    () => ["All", ...Array.from(new Set(guides.map((item) => item.category)))],
+    [guides]
+  );
   const filtered = useMemo(
     () => (category === "All" ? guides : guides.filter((item) => item.category === category)),
-    [category]
+    [category, guides]
   );
 
   return (
@@ -28,19 +37,28 @@ export default function LearnScreen({ navigation }: Props) {
         <ScreenTop backLabel="HOME" onBack={() => navigation.navigate("Home")} />
         <Text style={styles.title}>Learn</Text>
         <Text style={styles.sub}>Short, plain-language guides. Read at your own pace.</Text>
-        <FilterChips items={guideCategories} selected={category} onSelect={setCategory} />
+        <AdminAddButton label="+ Add guide" onPress={() => navigation.navigate("EditGuide", {})} />
+        <FilterChips items={categories} selected={category} onSelect={setCategory} />
         {filtered.map((item) => (
-          <Pressable
-            key={item.id}
-            style={styles.card}
-            onPress={() => navigation.navigate("GuideDetail", { guideId: item.id })}
-          >
-            <View style={styles.tag}>
-              <Text style={styles.tagText}>{item.category.toUpperCase()}</Text>
-            </View>
-            <Text style={styles.cardTitle}>{item.title}</Text>
-            <Text style={styles.cardBody}>{item.summary}</Text>
-          </Pressable>
+          <View key={item.id} style={styles.card}>
+            <Pressable onPress={() => navigation.navigate("GuideDetail", { guideId: item.id })}>
+              <View style={styles.tag}>
+                <Text style={styles.tagText}>{item.category.toUpperCase()}</Text>
+              </View>
+              <Text style={styles.cardTitle}>{item.title}</Text>
+              <Text style={styles.cardBody}>{item.summary}</Text>
+            </Pressable>
+            <AdminActions
+              onEdit={() => navigation.navigate("EditGuide", { guideId: item.id })}
+              onDelete={() =>
+                confirmDelete(`Delete ${item.title}?`, async () => {
+                  if (!token) return;
+                  await deleteGuide(token, item.id);
+                  await refresh();
+                })
+              }
+            />
+          </View>
         ))}
       </ScrollView>
     </SafeAreaView>

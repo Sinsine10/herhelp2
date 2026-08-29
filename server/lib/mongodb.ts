@@ -28,10 +28,17 @@ export async function connectDB() {
   }
 
   if (!cache.promise) {
-    cache.promise = mongoose.connect(MONGODB_URI, {
-      bufferCommands: false,
-      dbName: process.env.MONGODB_DB || "HERHELP",
-    });
+    cache.promise = mongoose
+      .connect(MONGODB_URI, {
+        bufferCommands: false,
+        dbName: process.env.MONGODB_DB || "HERHELP",
+        serverSelectionTimeoutMS: 15000,
+        family: 4,
+      })
+      .catch((error) => {
+        cache.promise = null;
+        throw error;
+      });
   }
 
   cache.conn = await cache.promise;

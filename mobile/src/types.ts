@@ -19,4 +19,8 @@ export type AppStackParamList = {
   IncidentDetail: { incidentId: string };
   GuideDetail: { guideId: string };
   Settings: undefined;
+  EditIncident: { incidentId?: string };
+  EditService: { serviceId?: string };
+  EditEmergency: { emergencyId?: string };
+  EditGuide: { guideId?: string };
 };

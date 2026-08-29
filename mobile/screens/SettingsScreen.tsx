@@ -26,6 +26,12 @@ export default function SettingsScreen({ navigation }: Props) {
           </View>
           <Text style={styles.name}>{user?.fullName}</Text>
           <Text style={styles.role}>{user?.role === "admin" ? "Admin" : "User"}</Text>
+          {user?.role === "admin" ? (
+            <Text style={styles.hint}>
+              You can add, edit, and delete incidents, help services, emergency numbers, and learn
+              guides from those screens.
+            </Text>
+          ) : null}
 
           <Text style={styles.label}>EMAIL</Text>
           <Text style={styles.value}>{user?.email || "Not set"}</Text>
@@ -70,7 +76,14 @@ const styles = StyleSheet.create({
   },
   initials: { color: colors.avatarText, fontWeight: "800", fontSize: 20 },
   name: { color: colors.navy, fontWeight: "800", fontSize: 20 },
-  role: { color: colors.muted, marginTop: 4, marginBottom: 20 },
+  role: { color: colors.muted, marginTop: 4, marginBottom: 12, textAlign: "center" },
+  hint: {
+    color: colors.muted,
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 16,
+    paddingHorizontal: 8,
+  },
   label: {
     alignSelf: "stretch",
     color: colors.label,

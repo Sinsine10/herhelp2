@@ -4,7 +4,10 @@ import type { CompositeScreenProps } from "@react-navigation/native";
 import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ScreenTop } from "../src/components/Chrome";
-import { emergencyNumbers } from "../src/data/emergencies";
+import { AdminActions, AdminAddButton, confirmDelete } from "../src/components/AdminControls";
+import { useAuth } from "../src/auth";
+import { useContent } from "../src/content";
+import { deleteEmergency } from "../src/api";
 import { callNumber, colors } from "../src/theme";
 import type { AppStackParamList, TabParamList } from "../src/types";
 
@@ -14,6 +17,9 @@ type Props = CompositeScreenProps<
 >;
 
 export default function EmergencyScreen({ navigation }: Props) {
+  const { token } = useAuth();
+  const { emergencies, refresh } = useContent();
+
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -22,20 +28,35 @@ export default function EmergencyScreen({ navigation }: Props) {
         <Text style={styles.sub}>
           Tap a number to call. If you cannot speak, keep the line open and move to a safe place.
         </Text>
-        {emergencyNumbers.map((item) => (
-          <Pressable
-            key={item.id}
-            style={styles.card}
-            onPress={() => Linking.openURL(callNumber(item.number))}
-          >
-            <View style={{ flex: 1, paddingRight: 12 }}>
-              <Text style={styles.name}>{item.name}</Text>
-              <Text style={styles.desc}>{item.description}</Text>
-            </View>
-            <View style={styles.pill}>
-              <Text style={styles.pillText}>{item.number}</Text>
-            </View>
-          </Pressable>
+        <AdminAddButton
+          label="+ Add number"
+          onPress={() => navigation.navigate("EditEmergency", {})}
+        />
+        {emergencies.map((item) => (
+          <View key={item.id} style={styles.cardWrap}>
+            <Pressable
+              style={styles.card}
+              onPress={() => Linking.openURL(callNumber(item.number))}
+            >
+              <View style={{ flex: 1, paddingRight: 12 }}>
+                <Text style={styles.name}>{item.name}</Text>
+                <Text style={styles.desc}>{item.description}</Text>
+              </View>
+              <View style={styles.pill}>
+                <Text style={styles.pillText}>{item.number}</Text>
+              </View>
+            </Pressable>
+            <AdminActions
+              onEdit={() => navigation.navigate("EditEmergency", { emergencyId: item.id })}
+              onDelete={() =>
+                confirmDelete(`Delete ${item.name}?`, async () => {
+                  if (!token) return;
+                  await deleteEmergency(token, item.id);
+                  await refresh();
+                })
+              }
+            />
+          </View>
         ))}
       </ScrollView>
     </SafeAreaView>
@@ -47,11 +68,11 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 20, paddingBottom: 32 },
   title: { fontSize: 32, fontWeight: "800", color: colors.navy },
   sub: { color: colors.muted, marginTop: 8, marginBottom: 20, lineHeight: 21 },
+  cardWrap: { marginBottom: 12 },
   card: {
     backgroundColor: colors.terracottaDark,
     borderRadius: 22,
     padding: 18,
-    marginBottom: 12,
     flexDirection: "row",
     alignItems: "center",
   },

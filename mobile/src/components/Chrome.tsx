@@ -17,8 +17,11 @@ export function Avatar() {
   }
 
   return (
-    <Pressable style={styles.avatar} onPress={openSettings}>
-      <Text style={styles.initials}>{initials(user?.fullName)}</Text>
+    <Pressable style={styles.avatarWrap} onPress={openSettings}>
+      {user?.role === "admin" ? <Text style={styles.admin}>ADMIN</Text> : null}
+      <View style={styles.avatar}>
+        <Text style={styles.initials}>{initials(user?.fullName)}</Text>
+      </View>
     </Pressable>
   );
 }
@@ -57,6 +60,16 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     letterSpacing: 0.6,
     textTransform: "uppercase",
+  },
+  avatarWrap: {
+    alignItems: "flex-end",
+  },
+  admin: {
+    color: colors.terracottaDark,
+    fontSize: 9,
+    fontWeight: "800",
+    marginBottom: 4,
+    letterSpacing: 0.6,
   },
   avatar: {
     width: 40,
