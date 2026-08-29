@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { CompositeScreenProps } from "@react-navigation/native";
@@ -11,6 +11,7 @@ import { useAuth } from "../src/auth";
 import { useContent } from "../src/content";
 import { deleteGuide } from "../src/api";
 import { colors } from "../src/theme";
+import { useI18n } from "../src/i18n/LanguageContext";
 import type { AppStackParamList, TabParamList } from "../src/types";
 
 type Props = CompositeScreenProps<
@@ -20,24 +21,29 @@ type Props = CompositeScreenProps<
 
 export default function LearnScreen({ navigation }: Props) {
   const { token } = useAuth();
+  const { t } = useI18n();
   const { guides, refresh } = useContent();
-  const [category, setCategory] = useState("All");
+  const allLabel = t("help.all");
+  const [category, setCategory] = useState(allLabel);
+  useEffect(() => {
+    setCategory(allLabel);
+  }, [allLabel]);
   const categories = useMemo(
-    () => ["All", ...Array.from(new Set(guides.map((item) => item.category)))],
-    [guides]
+    () => [allLabel, ...Array.from(new Set(guides.map((item) => item.category)))],
+    [guides, allLabel]
   );
   const filtered = useMemo(
-    () => (category === "All" ? guides : guides.filter((item) => item.category === category)),
-    [category, guides]
+    () => (category === allLabel ? guides : guides.filter((item) => item.category === category)),
+    [category, guides, allLabel]
   );
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <ScreenTop backLabel="HOME" onBack={() => navigation.navigate("Home")} />
-        <Text style={styles.title}>Learn</Text>
-        <Text style={styles.sub}>Short, plain-language guides. Read at your own pace.</Text>
-        <AdminAddButton label="+ Add guide" onPress={() => navigation.navigate("EditGuide", {})} />
+        <ScreenTop backLabel={t("nav.home")} onBack={() => navigation.navigate("Home")} />
+        <Text style={styles.title}>{t("learn.title")}</Text>
+        <Text style={styles.sub}>{t("learn.sub")}</Text>
+        <AdminAddButton label={t("admin.addGuide")} onPress={() => navigation.navigate("EditGuide", {})} />
         <FilterChips items={categories} selected={category} onSelect={setCategory} />
         {filtered.map((item) => (
           <View key={item.id} style={styles.card}>
@@ -51,7 +57,7 @@ export default function LearnScreen({ navigation }: Props) {
             <AdminActions
               onEdit={() => navigation.navigate("EditGuide", { guideId: item.id })}
               onDelete={() =>
-                confirmDelete(`Delete ${item.title}?`, async () => {
+                confirmDelete(t("admin.deleteConfirm", { name: item.title }), async () => {
                   if (!token) return;
                   await deleteGuide(token, item.id);
                   await refresh();

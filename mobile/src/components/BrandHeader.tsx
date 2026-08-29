@@ -1,16 +1,16 @@
 import { StyleSheet, Text, View } from "react-native";
 import { colors } from "../theme";
+import { useI18n } from "../i18n/LanguageContext";
 
 export function BrandHeader() {
+  const { t } = useI18n();
   return (
     <View style={styles.header}>
       <View style={styles.logoCircle}>
         <Text style={styles.leaf}>❀</Text>
       </View>
       <Text style={styles.name}>HerHelp</Text>
-      <Text style={styles.tagline}>
-        Reliable information and verified support for women and girls in Ethiopia.
-      </Text>
+      <Text style={styles.tagline}>{t("brand.tagline")}</Text>
     </View>
   );
 }

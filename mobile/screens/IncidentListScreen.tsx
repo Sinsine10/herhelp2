@@ -7,24 +7,23 @@ import { useAuth } from "../src/auth";
 import { useContent } from "../src/content";
 import { deleteIncident } from "../src/api";
 import { colors } from "../src/theme";
+import { useI18n } from "../src/i18n/LanguageContext";
 import type { AppStackParamList } from "../src/types";
 
 type Props = NativeStackScreenProps<AppStackParamList, "IncidentList">;
 
 export default function IncidentListScreen({ navigation }: Props) {
   const { token } = useAuth();
+  const { t } = useI18n();
   const { incidents, refresh } = useContent();
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <ScreenTop backLabel="HOME" onBack={() => navigation.navigate("Tabs", { screen: "Home" })} />
-        <Text style={styles.title}>Something happened</Text>
-        <Text style={styles.sub}>
-          Pick what is closest to your situation. You will get step-by-step guidance — no forms, no
-          reporting.
-        </Text>
-        <AdminAddButton label="+ Add incident" onPress={() => navigation.navigate("EditIncident", {})} />
+        <ScreenTop backLabel={t("nav.home")} onBack={() => navigation.navigate("Tabs", { screen: "Home" })} />
+        <Text style={styles.title}>{t("incidents.title")}</Text>
+        <Text style={styles.sub}>{t("incidents.sub")}</Text>
+        <AdminAddButton label={t("admin.addIncident")} onPress={() => navigation.navigate("EditIncident", {})} />
         {incidents.map((item) => (
           <View key={item.id} style={styles.card}>
             <Pressable
@@ -40,7 +39,7 @@ export default function IncidentListScreen({ navigation }: Props) {
             <AdminActions
               onEdit={() => navigation.navigate("EditIncident", { incidentId: item.id })}
               onDelete={() =>
-                confirmDelete(`Delete ${item.title}?`, async () => {
+                confirmDelete(t("admin.deleteConfirm", { name: item.title }), async () => {
                   if (!token) return;
                   await deleteIncident(token, item.id);
                   await refresh();

@@ -2,9 +2,11 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { colors, initials } from "../theme";
 import { useAuth } from "../auth";
+import { useI18n } from "../i18n/LanguageContext";
 
 export function Avatar() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const navigation = useNavigation();
 
   function openSettings() {
@@ -18,7 +20,7 @@ export function Avatar() {
 
   return (
     <Pressable style={styles.avatarWrap} onPress={openSettings}>
-      {user?.role === "admin" ? <Text style={styles.admin}>ADMIN</Text> : null}
+      {user?.role === "admin" ? <Text style={styles.admin}>{t("nav.admin")}</Text> : null}
       <View style={styles.avatar}>
         <Text style={styles.initials}>{initials(user?.fullName)}</Text>
       </View>

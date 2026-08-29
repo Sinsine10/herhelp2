@@ -6,6 +6,7 @@ import HomeScreen from "./screens/HomeScreen";
 import FindHelpScreen from "./screens/FindHelpScreen";
 import LearnScreen from "./screens/LearnScreen";
 import EmergencyScreen from "./screens/EmergencyScreen";
+import { useI18n } from "./src/i18n/LanguageContext";
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -18,6 +19,8 @@ function TabLabel({ label, focused }: { label: string; focused: boolean }) {
 }
 
 export default function Tabs() {
+  const { t } = useI18n();
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -32,28 +35,28 @@ export default function Tabs() {
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarLabel: ({ focused }) => <TabLabel label="HOME" focused={focused} />,
+          tabBarLabel: ({ focused }) => <TabLabel label={t("tabs.home")} focused={focused} />,
         }}
       />
       <Tab.Screen
         name="FindHelp"
         component={FindHelpScreen}
         options={{
-          tabBarLabel: ({ focused }) => <TabLabel label="FIND HELP" focused={focused} />,
+          tabBarLabel: ({ focused }) => <TabLabel label={t("tabs.findHelp")} focused={focused} />,
         }}
       />
       <Tab.Screen
         name="Learn"
         component={LearnScreen}
         options={{
-          tabBarLabel: ({ focused }) => <TabLabel label="LEARN" focused={focused} />,
+          tabBarLabel: ({ focused }) => <TabLabel label={t("tabs.learn")} focused={focused} />,
         }}
       />
       <Tab.Screen
         name="Emergency"
         component={EmergencyScreen}
         options={{
-          tabBarLabel: ({ focused }) => <TabLabel label="EMERGENCY" focused={focused} />,
+          tabBarLabel: ({ focused }) => <TabLabel label={t("tabs.emergency")} focused={focused} />,
         }}
       />
     </Tab.Navigator>
@@ -76,7 +79,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 10,
     fontWeight: "800",
-    letterSpacing: 0.4,
+    letterSpacing: 0,
     color: colors.navy,
     textAlign: "center",
   },

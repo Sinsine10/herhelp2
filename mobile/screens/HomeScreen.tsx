@@ -9,6 +9,7 @@ import { useAuth } from "../src/auth";
 import { useContent } from "../src/content";
 import { deleteIncident } from "../src/api";
 import { callNumber, colors, firstName } from "../src/theme";
+import { useI18n } from "../src/i18n/LanguageContext";
 import type { AppStackParamList, TabParamList } from "../src/types";
 
 type Props = CompositeScreenProps<
@@ -18,25 +19,26 @@ type Props = CompositeScreenProps<
 
 export default function HomeScreen({ navigation }: Props) {
   const { user, token } = useAuth();
+  const { t } = useI18n();
   const { incidents, emergencies, refresh } = useContent();
   const featured = incidents.filter((item) => item.featured).slice(0, 4);
-  const police = emergencies.find((item) => item.name.toLowerCase().includes("police")) ?? emergencies[0];
+  const police = emergencies.find((item) => item.number === "991") ?? emergencies[0];
   const policeNumber = police?.number ?? "991";
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenTop />
-        <Text style={styles.kicker}>WELCOME TO HERHELP</Text>
-        <Text style={styles.hello}>You are safe here, {firstName(user?.fullName)}.</Text>
-        <Text style={styles.sub}>
-          Choose what you need right now. Nothing you tap is shared with anyone.
-        </Text>
+        <Text style={styles.kicker}>{t("home.kicker")}</Text>
+        <Text style={styles.hello}>{t("home.hello", { name: firstName(user?.fullName) })}</Text>
+        <Text style={styles.sub}>{t("home.sub")}</Text>
 
         <Pressable style={styles.danger} onPress={() => Linking.openURL(callNumber(policeNumber))}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.dangerKicker}>IMMEDIATE DANGER?</Text>
-            <Text style={styles.dangerTitle}>Call {police?.name ?? "Police"} {policeNumber}</Text>
+            <Text style={styles.dangerKicker}>{t("home.danger")}</Text>
+            <Text style={styles.dangerTitle}>
+              {t("home.call", { name: police?.name ?? "Police", number: policeNumber })}
+            </Text>
           </View>
           <View style={styles.bang}>
             <Text style={styles.bangText}>!</Text>
@@ -44,9 +46,9 @@ export default function HomeScreen({ navigation }: Props) {
         </Pressable>
 
         <View style={styles.happened}>
-          <Text style={styles.happenedTitle}>Something happened</Text>
-          <Text style={styles.happenedSub}>I need immediate guidance on what to do next.</Text>
-          <AdminAddButton label="+ Add incident" onPress={() => navigation.navigate("EditIncident", {})} />
+          <Text style={styles.happenedTitle}>{t("home.happened")}</Text>
+          <Text style={styles.happenedSub}>{t("home.happenedSub")}</Text>
+          <AdminAddButton label={t("admin.addIncident")} onPress={() => navigation.navigate("EditIncident", {})} />
           <View style={styles.grid}>
             {featured.map((item) => (
               <View key={item.id} style={styles.gridWrap}>
@@ -59,7 +61,7 @@ export default function HomeScreen({ navigation }: Props) {
                 <AdminActions
                   onEdit={() => navigation.navigate("EditIncident", { incidentId: item.id })}
                   onDelete={() =>
-                    confirmDelete(`Delete ${item.title}?`, async () => {
+                    confirmDelete(t("admin.deleteConfirm", { name: item.title }), async () => {
                       if (!token) return;
                       await deleteIncident(token, item.id);
                       await refresh();
@@ -70,7 +72,7 @@ export default function HomeScreen({ navigation }: Props) {
             ))}
           </View>
           <Pressable onPress={() => navigation.navigate("IncidentList")}>
-            <Text style={styles.seeAll}>See all incident types</Text>
+            <Text style={styles.seeAll}>{t("home.seeAll")}</Text>
           </Pressable>
         </View>
 
@@ -79,15 +81,15 @@ export default function HomeScreen({ navigation }: Props) {
             <View style={[styles.letter, { backgroundColor: colors.helpIcon }]}>
               <Text style={[styles.letterText, { color: colors.helpIconText }]}>H</Text>
             </View>
-            <Text style={styles.miniTitle}>Find Help</Text>
-            <Text style={styles.miniSub}>Hospitals, shelters, legal aid</Text>
+            <Text style={styles.miniTitle}>{t("home.findHelp")}</Text>
+            <Text style={styles.miniSub}>{t("home.findHelpSub")}</Text>
           </Pressable>
           <Pressable style={styles.mini} onPress={() => navigation.navigate("Learn")}>
             <View style={[styles.letter, { backgroundColor: colors.learnIcon }]}>
               <Text style={[styles.letterText, { color: colors.learnIconText }]}>L</Text>
             </View>
-            <Text style={styles.miniTitle}>Learn</Text>
-            <Text style={styles.miniSub}>Your rights and safety guides</Text>
+            <Text style={styles.miniTitle}>{t("home.learn")}</Text>
+            <Text style={styles.miniSub}>{t("home.learnSub")}</Text>
           </Pressable>
         </View>
       </ScrollView>

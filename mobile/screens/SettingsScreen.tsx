@@ -3,44 +3,46 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useAuth } from "../src/auth";
 import { colors, initials } from "../src/theme";
+import { useI18n } from "../src/i18n/LanguageContext";
+import { LanguagePicker } from "../src/i18n/LanguagePicker";
 import type { AppStackParamList } from "../src/types";
 
 type Props = NativeStackScreenProps<AppStackParamList, "Settings">;
 
 export default function SettingsScreen({ navigation }: Props) {
   const { user, signOut } = useAuth();
+  const { t } = useI18n();
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content}>
         <Pressable onPress={() => navigation.goBack()} hitSlop={12}>
-          <Text style={styles.back}>← BACK</Text>
+          <Text style={styles.back}>← {t("nav.back")}</Text>
         </Pressable>
 
-        <Text style={styles.title}>Settings</Text>
-        <Text style={styles.sub}>Your account stays private on this device.</Text>
+        <Text style={styles.title}>{t("settings.title")}</Text>
+        <Text style={styles.sub}>{t("settings.sub")}</Text>
+
+        <Text style={styles.langLabel}>{t("settings.language")}</Text>
+        <Text style={styles.langHint}>{t("settings.languageHint")}</Text>
+        <LanguagePicker />
 
         <View style={styles.card}>
           <View style={styles.avatar}>
             <Text style={styles.initials}>{initials(user?.fullName)}</Text>
           </View>
           <Text style={styles.name}>{user?.fullName}</Text>
-          <Text style={styles.role}>{user?.role === "admin" ? "Admin" : "User"}</Text>
-          {user?.role === "admin" ? (
-            <Text style={styles.hint}>
-              You can add, edit, and delete incidents, help services, emergency numbers, and learn
-              guides from those screens.
-            </Text>
-          ) : null}
+          <Text style={styles.role}>{user?.role === "admin" ? t("settings.admin") : t("settings.user")}</Text>
+          {user?.role === "admin" ? <Text style={styles.hint}>{t("settings.adminHint")}</Text> : null}
 
-          <Text style={styles.label}>EMAIL</Text>
-          <Text style={styles.value}>{user?.email || "Not set"}</Text>
-          <Text style={[styles.label, styles.spaced]}>PHONE</Text>
+          <Text style={styles.label}>{t("settings.email")}</Text>
+          <Text style={styles.value}>{user?.email || t("settings.notSet")}</Text>
+          <Text style={[styles.label, styles.spaced]}>{t("settings.phone")}</Text>
           <Text style={styles.value}>{user?.phone}</Text>
         </View>
 
         <Pressable style={styles.logout} onPress={() => signOut()}>
-          <Text style={styles.logoutText}>Log out</Text>
+          <Text style={styles.logoutText}>{t("settings.logout")}</Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>
@@ -58,7 +60,15 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   title: { fontSize: 32, fontWeight: "800", color: colors.navy },
-  sub: { color: colors.muted, marginTop: 8, marginBottom: 20, lineHeight: 21 },
+  sub: { color: colors.muted, marginTop: 8, marginBottom: 16, lineHeight: 21 },
+  langLabel: {
+    color: colors.label,
+    fontSize: 11,
+    letterSpacing: 1.2,
+    fontWeight: "700",
+    marginBottom: 6,
+  },
+  langHint: { color: colors.muted, marginBottom: 10, lineHeight: 20 },
   card: {
     backgroundColor: colors.card,
     borderRadius: 22,

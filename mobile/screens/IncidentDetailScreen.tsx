@@ -7,15 +7,17 @@ import { useAuth } from "../src/auth";
 import { useContent } from "../src/content";
 import { deleteIncident } from "../src/api";
 import { callNumber, colors } from "../src/theme";
+import { useI18n } from "../src/i18n/LanguageContext";
 import type { AppStackParamList } from "../src/types";
 
 type Props = NativeStackScreenProps<AppStackParamList, "IncidentDetail">;
 
 export default function IncidentDetailScreen({ navigation, route }: Props) {
   const { token } = useAuth();
+  const { t } = useI18n();
   const { incidents, emergencies, refresh } = useContent();
   const incident = incidents.find((item) => item.id === route.params.incidentId);
-  const police = emergencies.find((item) => item.name.toLowerCase().includes("police")) ?? emergencies[0];
+  const police = emergencies.find((item) => item.number === "991") ?? emergencies[0];
   const policeNumber = police?.number ?? "991";
 
   if (!incident) {
@@ -25,13 +27,13 @@ export default function IncidentDetailScreen({ navigation, route }: Props) {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <ScreenTop backLabel="ALL INCIDENT TYPES" onBack={() => navigation.navigate("IncidentList")} />
+        <ScreenTop backLabel={t("nav.incidents")} onBack={() => navigation.navigate("IncidentList")} />
         <Text style={styles.title}>{incident.title}</Text>
         <Text style={styles.sub}>{incident.summary}</Text>
         <AdminActions
           onEdit={() => navigation.navigate("EditIncident", { incidentId: incident.id })}
           onDelete={() =>
-            confirmDelete(`Delete ${incident.title}?`, async () => {
+            confirmDelete(t("admin.deleteConfirm", { name: incident.title }), async () => {
               if (!token) return;
               await deleteIncident(token, incident.id);
               await refresh();
@@ -41,12 +43,12 @@ export default function IncidentDetailScreen({ navigation, route }: Props) {
         />
 
         <Pressable style={styles.call} onPress={() => Linking.openURL(callNumber(policeNumber))}>
-          <Text style={styles.callText}>In danger right now? Call {policeNumber}</Text>
-          <Text style={styles.callAction}>CALL</Text>
+          <Text style={styles.callText}>{t("incident.call", { number: policeNumber })}</Text>
+          <Text style={styles.callAction}>{t("incident.callAction")}</Text>
         </Pressable>
 
         <View style={styles.badge}>
-          <Text style={styles.badgeText}>ACTION PLAN</Text>
+          <Text style={styles.badgeText}>{t("incident.plan")}</Text>
         </View>
 
         {incident.steps.map((step, index) => (

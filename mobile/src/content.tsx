@@ -12,6 +12,13 @@ import { helpServices as fallbackServices } from "./data/services";
 import { emergencyNumbers as fallbackEmergencies } from "./data/emergencies";
 import { guides as fallbackGuides } from "./data/guides";
 import { useAuth } from "./auth";
+import { useI18n } from "./i18n/LanguageContext";
+import {
+  localizeEmergencies,
+  localizeGuides,
+  localizeIncidents,
+  localizeServices,
+} from "./i18n/content";
 
 type ContentContextValue = {
   incidents: Incident[];
@@ -33,6 +40,7 @@ const fallback: AppContent = {
 
 export function ContentProvider({ children }: { children: ReactNode }) {
   const { token, refreshUser } = useAuth();
+  const { lang } = useI18n();
   const [content, setContent] = useState<AppContent>(fallback);
   const [loading, setLoading] = useState(true);
 
@@ -60,11 +68,14 @@ export function ContentProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({
-      ...content,
+      incidents: localizeIncidents(content.incidents, lang),
+      services: localizeServices(content.services, lang),
+      emergencies: localizeEmergencies(content.emergencies, lang),
+      guides: localizeGuides(content.guides, lang),
       loading,
       refresh,
     }),
-    [content, loading]
+    [content, loading, lang]
   );
 
   return <ContentContext.Provider value={value}>{children}</ContentContext.Provider>;

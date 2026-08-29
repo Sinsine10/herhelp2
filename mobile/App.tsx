@@ -19,6 +19,7 @@ import EditEmergencyScreen from "./screens/EditEmergencyScreen";
 import EditGuideScreen from "./screens/EditGuideScreen";
 import Tabs from "./Tabs";
 import { ContentProvider } from "./src/content";
+import { LanguageProvider } from "./src/i18n/LanguageContext";
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const AppStack = createNativeStackNavigator<AppStackParamList>();
@@ -73,14 +74,16 @@ function RootNavigator() {
 export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <AuthProvider>
-        <ContentProvider>
-          <NavigationContainer>
-            <StatusBar style="dark" />
-            <RootNavigator />
-          </NavigationContainer>
-        </ContentProvider>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <ContentProvider>
+            <NavigationContainer>
+              <StatusBar style="dark" />
+              <RootNavigator />
+            </NavigationContainer>
+          </ContentProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </GestureHandlerRootView>
   );
 }

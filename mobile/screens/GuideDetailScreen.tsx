@@ -7,12 +7,14 @@ import { useAuth } from "../src/auth";
 import { useContent } from "../src/content";
 import { deleteGuide } from "../src/api";
 import { colors } from "../src/theme";
+import { useI18n } from "../src/i18n/LanguageContext";
 import type { AppStackParamList } from "../src/types";
 
 type Props = NativeStackScreenProps<AppStackParamList, "GuideDetail">;
 
 export default function GuideDetailScreen({ navigation, route }: Props) {
   const { token } = useAuth();
+  const { t } = useI18n();
   const { guides, refresh } = useContent();
   const guide = guides.find((item) => item.id === route.params.guideId);
 
@@ -23,13 +25,13 @@ export default function GuideDetailScreen({ navigation, route }: Props) {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <ScreenTop backLabel="ALL GUIDES" onBack={() => navigation.navigate("Tabs", { screen: "Learn" })} />
+        <ScreenTop backLabel={t("nav.guides")} onBack={() => navigation.navigate("Tabs", { screen: "Learn" })} />
         <Text style={styles.title}>{guide.title}</Text>
         <Text style={styles.sub}>{guide.summary}</Text>
         <AdminActions
           onEdit={() => navigation.navigate("EditGuide", { guideId: guide.id })}
           onDelete={() =>
-            confirmDelete(`Delete ${guide.title}?`, async () => {
+            confirmDelete(t("admin.deleteConfirm", { name: guide.title }), async () => {
               if (!token) return;
               await deleteGuide(token, guide.id);
               await refresh();

@@ -9,6 +9,7 @@ import { useAuth } from "../src/auth";
 import { useContent } from "../src/content";
 import { deleteEmergency } from "../src/api";
 import { callNumber, colors } from "../src/theme";
+import { useI18n } from "../src/i18n/LanguageContext";
 import type { AppStackParamList, TabParamList } from "../src/types";
 
 type Props = CompositeScreenProps<
@@ -18,18 +19,17 @@ type Props = CompositeScreenProps<
 
 export default function EmergencyScreen({ navigation }: Props) {
   const { token } = useAuth();
+  const { t } = useI18n();
   const { emergencies, refresh } = useContent();
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <ScreenTop backLabel="HOME" onBack={() => navigation.navigate("Home")} />
-        <Text style={styles.title}>Emergency numbers</Text>
-        <Text style={styles.sub}>
-          Tap a number to call. If you cannot speak, keep the line open and move to a safe place.
-        </Text>
+        <ScreenTop backLabel={t("nav.home")} onBack={() => navigation.navigate("Home")} />
+        <Text style={styles.title}>{t("emergency.title")}</Text>
+        <Text style={styles.sub}>{t("emergency.sub")}</Text>
         <AdminAddButton
-          label="+ Add number"
+          label={t("admin.addNumber")}
           onPress={() => navigation.navigate("EditEmergency", {})}
         />
         {emergencies.map((item) => (
@@ -49,7 +49,7 @@ export default function EmergencyScreen({ navigation }: Props) {
             <AdminActions
               onEdit={() => navigation.navigate("EditEmergency", { emergencyId: item.id })}
               onDelete={() =>
-                confirmDelete(`Delete ${item.name}?`, async () => {
+                confirmDelete(t("admin.deleteConfirm", { name: item.name }), async () => {
                   if (!token) return;
                   await deleteEmergency(token, item.id);
                   await refresh();

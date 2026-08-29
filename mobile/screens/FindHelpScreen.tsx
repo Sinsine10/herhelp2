@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { CompositeScreenProps } from "@react-navigation/native";
@@ -11,6 +11,7 @@ import { useAuth } from "../src/auth";
 import { useContent } from "../src/content";
 import { deleteService } from "../src/api";
 import { callNumber, colors } from "../src/theme";
+import { useI18n } from "../src/i18n/LanguageContext";
 import type { AppStackParamList, TabParamList } from "../src/types";
 
 type Props = CompositeScreenProps<
@@ -20,18 +21,23 @@ type Props = CompositeScreenProps<
 
 export default function FindHelpScreen({ navigation }: Props) {
   const { token } = useAuth();
+  const { t } = useI18n();
   const { services, refresh } = useContent();
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("All");
+  const allLabel = t("help.all");
+  const [category, setCategory] = useState(allLabel);
+  useEffect(() => {
+    setCategory(allLabel);
+  }, [allLabel]);
   const categories = useMemo(
-    () => ["All", ...Array.from(new Set(services.map((item) => item.category)))],
-    [services]
+    () => [allLabel, ...Array.from(new Set(services.map((item) => item.category)))],
+    [services, allLabel]
   );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return services.filter((item) => {
-      const matchesCategory = category === "All" || item.category === category;
+      const matchesCategory = category === allLabel || item.category === category;
       const matchesQuery =
         !q ||
         item.name.toLowerCase().includes(q) ||
@@ -40,20 +46,18 @@ export default function FindHelpScreen({ navigation }: Props) {
         item.description.toLowerCase().includes(q);
       return matchesCategory && matchesQuery;
     });
-  }, [query, category, services]);
+  }, [query, category, services, allLabel]);
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <ScreenTop backLabel="HOME" onBack={() => navigation.navigate("Home")} />
-        <Text style={styles.title}>Find help</Text>
-        <Text style={styles.sub}>
-          Verified hospitals, shelters, counselling, legal aid and protection services.
-        </Text>
-        <AdminAddButton label="+ Add service" onPress={() => navigation.navigate("EditService", {})} />
+        <ScreenTop backLabel={t("nav.home")} onBack={() => navigation.navigate("Home")} />
+        <Text style={styles.title}>{t("help.title")}</Text>
+        <Text style={styles.sub}>{t("help.sub")}</Text>
+        <AdminAddButton label={t("admin.addService")} onPress={() => navigation.navigate("EditService", {})} />
         <TextInput
           style={styles.search}
-          placeholder="Search by name, service or area"
+          placeholder={t("help.search")}
           placeholderTextColor={colors.muted}
           value={query}
           onChangeText={setQuery}
@@ -66,7 +70,7 @@ export default function FindHelpScreen({ navigation }: Props) {
               <View style={styles.badges}>
                 {item.verified ? (
                   <View style={styles.verified}>
-                    <Text style={styles.verifiedText}>VERIFIED</Text>
+                    <Text style={styles.verifiedText}>{t("help.verified")}</Text>
                   </View>
                 ) : null}
                 <View style={styles.hours}>
@@ -78,12 +82,12 @@ export default function FindHelpScreen({ navigation }: Props) {
             <Text style={styles.desc}>{item.description}</Text>
             <Text style={styles.area}>{item.area}</Text>
             <Pressable style={styles.call} onPress={() => Linking.openURL(callNumber(item.phone))}>
-              <Text style={styles.callText}>Call {item.phone}</Text>
+              <Text style={styles.callText}>{t("help.call", { phone: item.phone })}</Text>
             </Pressable>
             <AdminActions
               onEdit={() => navigation.navigate("EditService", { serviceId: item.id })}
               onDelete={() =>
-                confirmDelete(`Delete ${item.name}?`, async () => {
+                confirmDelete(t("admin.deleteConfirm", { name: item.name }), async () => {
                   if (!token) return;
                   await deleteService(token, item.id);
                   await refresh();

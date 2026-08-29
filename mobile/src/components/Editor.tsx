@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "../theme";
+import { useI18n } from "../i18n/LanguageContext";
 
 export function EditorScreen({
   title,
@@ -27,18 +28,19 @@ export function EditorScreen({
   error: string;
   children: ReactNode;
 }) {
+  const { t } = useI18n();
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <Pressable onPress={onBack}>
-            <Text style={styles.back}>← BACK</Text>
+            <Text style={styles.back}>← {t("nav.back")}</Text>
           </Pressable>
           <Text style={styles.title}>{title}</Text>
           {children}
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Pressable style={styles.save} onPress={onSave} disabled={saving}>
-            <Text style={styles.saveText}>{saving ? "Saving..." : "Save"}</Text>
+            <Text style={styles.saveText}>{saving ? t("editor.saving") : t("editor.save")}</Text>
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>

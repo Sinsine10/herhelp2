@@ -1,17 +1,21 @@
 import { Alert, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { colors } from "../theme";
 import { useAuth } from "../auth";
+import { useI18n } from "../i18n/LanguageContext";
 
-export function confirmDelete(message: string, onConfirm: () => void) {
+export function confirmDelete(message: string, onConfirm: () => void, labels?: { title?: string; cancel?: string; delete?: string }) {
+  const title = labels?.title ?? "Delete";
+  const cancel = labels?.cancel ?? "Cancel";
+  const del = labels?.delete ?? "Delete";
   if (Platform.OS === "web") {
     if (typeof window !== "undefined" && window.confirm(message)) {
       onConfirm();
     }
     return;
   }
-  Alert.alert("Delete", message, [
-    { text: "Cancel", style: "cancel" },
-    { text: "Delete", style: "destructive", onPress: onConfirm },
+  Alert.alert(title, message, [
+    { text: cancel, style: "cancel" },
+    { text: del, style: "destructive", onPress: onConfirm },
   ]);
 }
 
@@ -27,14 +31,15 @@ export function AdminAddButton({ label, onPress }: { label: string; onPress: () 
 
 export function AdminActions({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
   const { isAdmin } = useAuth();
+  const { t } = useI18n();
   if (!isAdmin) return null;
   return (
     <View style={styles.row}>
       <Pressable style={styles.edit} onPress={onEdit}>
-        <Text style={styles.editText}>Edit</Text>
+        <Text style={styles.editText}>{t("admin.edit")}</Text>
       </Pressable>
       <Pressable style={styles.delete} onPress={onDelete}>
-        <Text style={styles.deleteText}>Delete</Text>
+        <Text style={styles.deleteText}>{t("admin.delete")}</Text>
       </Pressable>
     </View>
   );

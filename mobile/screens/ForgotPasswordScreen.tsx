@@ -3,24 +3,23 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { BrandHeader } from "../src/components/BrandHeader";
 import { colors } from "../src/theme";
+import { useI18n } from "../src/i18n/LanguageContext";
 import type { AuthStackParamList } from "../src/types";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "ForgotPassword">;
 
 export default function ForgotPasswordScreen({ navigation }: Props) {
+  const { t } = useI18n();
   return (
     <View style={styles.root}>
       <SafeAreaView edges={["top"]} style={styles.topSafe}>
         <BrandHeader />
       </SafeAreaView>
       <View style={styles.sheet}>
-        <Text style={styles.title}>Reset password</Text>
-        <Text style={styles.body}>
-          Password reset will be added with the admin tools. For now, create a new account or sign
-          in with the email you registered.
-        </Text>
+        <Text style={styles.title}>{t("forgot.title")}</Text>
+        <Text style={styles.body}>{t("forgot.body")}</Text>
         <Pressable style={styles.button} onPress={() => navigation.navigate("Login")}>
-          <Text style={styles.buttonText}>Back to Login</Text>
+          <Text style={styles.buttonText}>{t("forgot.back")}</Text>
         </Pressable>
       </View>
     </View>
