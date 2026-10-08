@@ -1,4 +1,3 @@
-```tsx
 import {
   ActivityIndicator,
   View,
@@ -143,4 +142,4 @@ const styles = StyleSheet.create({
     backgroundColor: colors.cream,
   },
 });
-```
+
