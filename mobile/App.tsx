@@ -1,4 +1,10 @@
-import { ActivityIndicator, View } from "react-native";
+import {
+  ActivityIndicator,
+  View,
+  Platform,
+  StyleSheet,
+} from "react-native";
+
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -29,7 +35,10 @@ function AuthNavigator() {
     <AuthStack.Navigator screenOptions={{ headerShown: false }}>
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="Register" component={RegisterScreen} />
-      <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+      <AuthStack.Screen
+        name="ForgotPassword"
+        component={ForgotPasswordScreen}
+      />
     </AuthStack.Navigator>
   );
 }
@@ -71,6 +80,24 @@ function RootNavigator() {
   return user ? <MainNavigator /> : <AuthNavigator />;
 }
 
+function MobileWebContainer({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  if (Platform.OS !== "web") {
+    return <>{children}</>;
+  }
+
+  return (
+    <View style={styles.webBackground}>
+      <View style={styles.mobileContainer}>
+        {children}
+      </View>
+    </View>
+  );
+}
+
 export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -79,7 +106,11 @@ export default function App() {
           <ContentProvider>
             <NavigationContainer>
               <StatusBar style="dark" />
-              <RootNavigator />
+
+              <MobileWebContainer>
+                <RootNavigator />
+              </MobileWebContainer>
+
             </NavigationContainer>
           </ContentProvider>
         </AuthProvider>
@@ -87,3 +118,19 @@ export default function App() {
     </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  webBackground: {
+    flex: 1,
+    width: "100%",
+    alignItems: "center",
+    backgroundColor: "#f2f2f2",
+  },
+
+  mobileContainer: {
+    flex: 1,
+    width: "100%",
+    maxWidth: 430,
+    backgroundColor: colors.cream,
+  },
+});
