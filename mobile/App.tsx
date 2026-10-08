@@ -1,17 +1,19 @@
+```tsx
 import {
   ActivityIndicator,
   View,
   Platform,
   StyleSheet,
 } from "react-native";
-
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
+
 import { AuthProvider, useAuth } from "./src/auth";
 import { colors } from "./src/theme";
 import type { AppStackParamList, AuthStackParamList } from "./src/types";
+
 import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
 import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
@@ -23,6 +25,7 @@ import EditIncidentScreen from "./screens/EditIncidentScreen";
 import EditServiceScreen from "./screens/EditServiceScreen";
 import EditEmergencyScreen from "./screens/EditEmergencyScreen";
 import EditGuideScreen from "./screens/EditGuideScreen";
+
 import Tabs from "./Tabs";
 import { ContentProvider } from "./src/content";
 import { LanguageProvider } from "./src/i18n/LanguageContext";
@@ -48,12 +51,18 @@ function MainNavigator() {
     <AppStack.Navigator screenOptions={{ headerShown: false }}>
       <AppStack.Screen name="Tabs" component={Tabs} />
       <AppStack.Screen name="IncidentList" component={IncidentListScreen} />
-      <AppStack.Screen name="IncidentDetail" component={IncidentDetailScreen} />
+      <AppStack.Screen
+        name="IncidentDetail"
+        component={IncidentDetailScreen}
+      />
       <AppStack.Screen name="GuideDetail" component={GuideDetailScreen} />
       <AppStack.Screen name="Settings" component={SettingsScreen} />
       <AppStack.Screen name="EditIncident" component={EditIncidentScreen} />
       <AppStack.Screen name="EditService" component={EditServiceScreen} />
-      <AppStack.Screen name="EditEmergency" component={EditEmergencyScreen} />
+      <AppStack.Screen
+        name="EditEmergency"
+        component={EditEmergencyScreen}
+      />
       <AppStack.Screen name="EditGuide" component={EditGuideScreen} />
     </AppStack.Navigator>
   );
@@ -134,3 +143,4 @@ const styles = StyleSheet.create({
     backgroundColor: colors.cream,
   },
 });
+```
